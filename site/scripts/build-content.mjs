@@ -33,7 +33,7 @@ mdflow is a Git-native control plane for repeatable agent work. Define a job as 
 
 ## When to use it
 
-Use mdflow for work you expect to repeat: code review, release notes, issue triage, and other jobs that benefit from shared instructions and declared inputs. It is not a hosted agent service. Your local environment supplies the engine, credentials, files, and permissions. The default engine is **${facts.defaultEngine}**; supported engine names are ${facts.engines.map((engine) => `\`${engine}\``).join(', ')}. An engine must be installed and configured before it can run a flow.
+Use mdflow for work you expect to repeat: code review, release notes, issue triage, and other jobs that benefit from shared instructions and declared inputs. Workflows execute only through the local CLI; the website serves read-only documentation and source facts. Your local environment supplies the engine, credentials, files, and permissions. The default engine is **${facts.defaultEngine}**; supported engine names are ${facts.engines.map((engine) => `\`${engine}\``).join(', ')}. An engine must be installed and configured before it can run a flow.
 
 ## Inspect, evaluate, then improve
 
@@ -81,7 +81,7 @@ description: How the static documentation site differs from local CLI execution,
 
 ## This public documentation site
 
-mdflow.dev serves public documentation and a client-side interactive demonstration. Reading a page is not a request to run mdflow on your machine, and the demonstration is not a hosted AI execution service. The site's checked-in application code does not integrate an analytics SDK or an advertising tracker. That statement does not establish what infrastructure logs or platform-level services a hosting provider may operate.
+mdflow.dev serves public documentation, source facts, and a client-side interactive demonstration. Workflows execute only through the local CLI; the website serves read-only documentation and source facts. The demonstration runs in your browser. The site's checked-in application code does not integrate an analytics SDK or an advertising tracker. That statement does not establish what infrastructure logs or platform-level services a hosting provider may operate.
 
 The site is hosted on Vercel. Like other web hosts, the hosting infrastructure receives request information such as an IP address, requested URL, and browser headers to deliver pages and operate the service. Retention and processing at that layer are governed by the provider's configuration and [Vercel's privacy policy](https://vercel.com/legal/privacy-policy); this repository does not establish a retention period or a guarantee that requests are never logged.
 
@@ -103,16 +103,16 @@ Local flow logs, feedback, eval receipts, and evolution artifacts can contain se
         sources: ['README.md', 'docs/public-api.md', 'docs/evolve.md', 'SECURITY.md', 'site/src/facts.json', 'skills/mdflow/SKILL.md'],
         raw: `---
 title: Documentation and agent interfaces — mdflow
-description: Install mdflow, inspect the local CLI, understand the versioned Flow UX protocol, and respect operation effects and separate consent.
+description: Install mdflow, inspect the local CLI, read the public source-facts snapshot, and respect version contracts, operation effects, and separate consent.
 ---
 
 # Documentation and agent interfaces
 
-mdflow turns Markdown flows into repeatable local agent commands. This site publishes documentation and static machine-readable resources, not an HTTP execution API or a remote MCP server. The interface for running work is the installed \`md\` / \`mdflow\` CLI.
+mdflow turns Markdown flows into repeatable local agent commands. Workflows execute only through the local CLI; the website serves read-only documentation and source facts. Use the installed \`md\` / \`mdflow\` CLI for running work.
 
 ## Install and inspect first
 
-Use \`npm install -g mdflow\` for the CLI, or \`npx mdflow\` to invoke the package. Install and authenticate the engine you intend to use separately. The current source facts identify mdflow **${facts.versionBase}**, with **${facts.defaultEngine}** as the default engine; always ask your installed CLI for its version before assuming that it matches this documentation.
+Install the [official mdflow npm package](https://www.npmjs.com/package/mdflow) with \`npm install -g mdflow\`, or use \`npx mdflow\` to invoke the package. Install and authenticate the engine you intend to use separately. The current source facts identify mdflow **${facts.versionBase}**, with **${facts.defaultEngine}** as the default engine; always ask your installed CLI for its version before assuming that it matches this documentation.
 
 mdflow runs on [Bun](https://bun.sh). The interactive launcher offers to install Bun if it is missing; in a non-interactive environment, install Bun first. Package installation and engine authentication are environment changes, not part of the read-only doctor query.
 
@@ -124,11 +124,35 @@ md roster --json
 
 \`md doctor --json\` is a static, read-only readiness check: it does not execute a flow, load executable sidecars, expand imports, fetch URLs, or write files. Once local setup is approved, \`npx mdflow init --yes\` creates a deterministic starter roster without an engine invocation. Bare \`md\` opens the searchable Flow Workbench. \`md init --guided\` is different: it launches an engine-guided setup and needs separate approval.
 
-## Versioned machine interfaces
+## Local CLI protocol
 
 The [public CLI reference](https://mdflow.dev/docs/public-api.md) defines **Flow UX Protocol v1** (\`protocolVersion: 1\`). Check \`md --version\` and the protocol version in JSON responses. \`md doctor --json\` reports diagnostics and effect-labelled next actions; \`md roster --json\` enumerates flows; \`md explain <flow.md> --json\` resolves one invocation; and \`md <flow.md> --events\` executes a real run and streams NDJSON events. Event streaming is not a free preview. \`md <flow.md> --json\` is the separate single-result output mode, not the event stream.
 
-Use stable diagnostic codes, operation effects, and consent requirements rather than parsing terminal styling. [facts.json](https://mdflow.dev/facts.json) is a static snapshot of this site's CLI facts and operation contract, not a live query of your project's installed engines or readiness.
+Use stable diagnostic codes, operation effects, and consent requirements rather than parsing terminal styling.
+
+## Public source-facts interface
+
+The site's public read-only machine interface is **GET https://mdflow.dev/facts.json**. It returns \`application/json\`: a static snapshot of published CLI source facts, command descriptions, operation effects and consent labels, safety rules, agent prompt templates, and flag descriptions. No authentication, credentials, or request body are required. Reading it performs no mutation and launches no workflow. HEAD is available for HTTP metadata.
+
+\`\`\`bash
+curl --fail-with-body -H 'Accept: application/json' https://mdflow.dev/facts.json
+\`\`\`
+
+The [OpenAPI 3.1 specification](https://mdflow.dev/openapi.json) describes only GET /facts.json. Its \`info.version\` is **1.0.0** (interface version 1). The response's \`contract.contractVersion\` is **${facts.contract.contractVersion}**, which versions the embedded CLI operation contract. The separate \`versionBase\` field identifies the CLI source version, currently **${facts.versionBase}**. The URL remains /facts.json. The schema covers every top-level field and derives nested command and operation shapes from the same source snapshot published at that URL.
+
+The response includes \`X-API-Version: 1\` and \`Link\` headers with \`service-desc\` and \`service-doc\` relations. Additive fields are allowed within v1; clients should tolerate fields they do not yet recognize. Breaking representation changes require a new URL and a new major OpenAPI \`info.version\`, rather than silently changing existing fields at /facts.json.
+
+Discover the specification through the [RFC 9727 API catalog](https://mdflow.dev/.well-known/api-catalog), served as \`application/linkset+json\`. Its \`service-desc\` link points to /openapi.json and \`service-doc\` points to this page. The snapshot changes when the website is built and published, and hosting caches may serve an earlier snapshot. It describes source capabilities, not your project's files, installed engines, readiness, or execution results. Use the local CLI to inspect those.
+
+### HTTP errors and public hosting
+
+Site-handled JSON errors use [RFC 9457 Problem Details](https://www.rfc-editor.org/rfc/rfc9457) with \`Content-Type: application/problem+json\`. Responses include \`type\` (\`about:blank\` for standard HTTP problems), \`title\`, \`status\`, \`detail\`, and a \`resolution\` hint. An optional \`instance\` identifies the failed request when available. Use the HTTP status for control flow and allow additional problem fields.
+
+- **404 Not Found:** a requested JSON resource is missing. Check the resource URL against the catalog and specification.
+- **405 Method Not Allowed:** an unsupported method is used on the read-only facts resource. The \`Allow\` header is \`GET, HEAD\`; use GET to read the snapshot. There are no mutation operations.
+- **406 Not Acceptable:** the request excludes the available JSON representation. Send \`Accept: application/json\`.
+
+The site is publicly hosted on Vercel. Hosting receives ordinary request information (such as IP address, URL, and headers); see [privacy](https://mdflow.dev/privacy/) for infrastructure and third-party processing. Hosting or network failures can occur before site handling and need not use the problem format. Check status and Content-Type before parsing; treat this public, cacheable document as source documentation rather than live local state. Local CLI errors and consent rules are separately defined in the [CLI reference](https://mdflow.dev/docs/public-api.md).
 
 ## Costs, permissions, and proof
 

@@ -35,6 +35,58 @@ Updated **2026-07-17** — the pipeline has since grown:
   `docs` is scoped to `docs/public-api.md` + `docs/evolve.md`, and
   `src/**/*.test.ts` is excluded.
 
+Updated **2026-08-30** — public agent-readable site:
+
+- `site/scripts/prerender.mjs` renders the actual React homepage after Vite
+  builds it; the browser hydrates that same content. Core documentation is
+  visible without JavaScript. The old duplicated hero/token template is gone.
+- `build-content.mjs` publishes the existing article and About, Contact,
+  Privacy, and Docs pages, each with a Markdown representation. The new
+  `build-agent-resources.mjs` derives `index.md`, `llms.txt`, `llms-full.txt`,
+  `facts.json`, `pricing.md`, robots/sitemap, source-document copies, and the
+  well-known skill index from repository facts and documentation. Generated
+  files live only in ignored `site/dist/`; edit their sources, not the output.
+- `site/middleware.ts` negotiates HTML/Markdown on the published page routes,
+  respects Accept quality weights and exclusions, returns 406 when neither
+  representation is acceptable, and emits `Vary: Accept, Accept-Encoding`.
+  Add a new article route to its matcher when publishing another article.
+  `site/vercel.json` preserves static assets and returns real HTTP 404s with
+  recovery links: HTML for browsers, JSON Problem Details for JSON clients
+  and missing `/api/` paths, Markdown otherwise.
+- These are public, read-only documentation surfaces, not an execution API
+  or MCP server. Running workflows still requires the installed CLI and its
+  documented permissions. The skill index hashes the exact shipped skill;
+  `facts.json` publishes the existing effect-labelled agent contract.
+- `openapi.json` describes the existing read-only `GET /facts.json` resource;
+  `/.well-known/api-catalog` discovers that specification and the Docs page.
+  Facts responses advertise `X-API-Version: 1`. The middleware rejects writes
+  with 405 and unsupported representations with 406 using RFC 9457 errors.
+  Local commands listed in facts are descriptive data, not HTTP operations.
+  Additive fields remain compatible within v1; breaking changes require a new
+  resource URL and major specification version.
+- Build/verify from `site/` with `bun run verify`. The build requires the
+  repository package metadata, docs, and skill sources above `site/`; keep
+  the full repository available to the build. `bun run preview -- --host
+  127.0.0.1` previews rendered pages but does not emulate Vercel middleware
+  or recovery routing. Check those against the deployed URL:
+
+  ```sh
+  curl -i -H 'Accept: text/markdown' https://mdflow.dev/
+  curl -i -H 'Accept: text/html' https://mdflow.dev/
+  curl -i -H 'Accept: application/json' https://mdflow.dev/
+  curl -i https://mdflow.dev/nonexistent-agent-readiness-check
+  curl https://mdflow.dev/.well-known/agent-skills/index.json
+  curl -i https://mdflow.dev/facts.json
+  curl -I https://mdflow.dev/.well-known/api-catalog
+  curl -i -X POST https://mdflow.dev/facts.json
+  ```
+
+- Production publishes through the existing GitHub/Vercel integration on
+  `main`; use `chore(site):` commits to avoid an npm release. Rescan
+  `https://is-agentic.com/scan/mdflow.dev` after the deployment is ready.
+  Its public report API reads the latest completed snapshot, not a new scan.
+  Readiness scores are evidence snapshots, not guarantees of task success.
+
 ## Remaining manual steps (Vercel dashboard, one-time)
 
 1. In the Vercel project **mdflow.dev** (`prj_GJKQu4COb2mF7TOutclFWxLnQ8cx`),

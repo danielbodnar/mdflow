@@ -1,22 +1,6 @@
-import fs from 'fs';
 import path from 'path';
-import { defineConfig, type Plugin } from 'vite';
+import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
-
-/** Replaces %FACTS_*% tokens in index.html (the static hero shell) from the
- *  generated src/facts.json, so the pre-React markup can never drift from
- *  what Hero.tsx renders. */
-const factsHtml = (): Plugin => {
-  const facts = JSON.parse(
-    fs.readFileSync(path.resolve(__dirname, 'src/facts.json'), 'utf8'),
-  );
-  return {
-    name: 'facts-html',
-    transformIndexHtml(html) {
-      return html.replaceAll('%FACTS_VERSION_BASE%', facts.versionBase);
-    },
-  };
-};
 
 export default defineConfig(() => {
     return {
@@ -30,7 +14,7 @@ export default defineConfig(() => {
           ? { clientPort: Number(process.env.PORTLESS_PORT) || 1355 }
           : undefined,
       },
-      plugins: [react(), factsHtml()],
+      plugins: [react()],
       resolve: {
         alias: {
           '@': path.resolve(__dirname, '.'),

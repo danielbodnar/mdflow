@@ -1,0 +1,7 @@
+{
+  "type": "about:blank",
+  "title": "Not Found",
+  "status": 404,
+  "detail": "This URL does not identify a published mdflow resource. No workflow was run and no state was changed.",
+  "resolution": "Read https://mdflow.dev/openapi.json for the source-facts resource, https://mdflow.dev/llms.txt for agent guidance, or https://mdflow.dev/sitemap.xml for pages. Workflow execution is available only through the installed local CLI."
+}

@@ -39,3 +39,27 @@ describe('page representation negotiation', () => {
         expect(await response.text()).toBe('');
     });
 });
+
+describe('public source facts contract', () => {
+    test.each(['GET', 'HEAD'])('allows %s with JSON or wildcard Accept', (method) => {
+        for (const accept of ['application/json', 'application/*', '*/*']) {
+            const response = middleware(new Request('https://mdflow.dev/facts.json', { method, headers: { Accept: accept } }));
+            expect(response.headers.get('x-middleware-next')).toBe('1');
+            expect(response.headers.get('Vary')).toContain('Accept');
+        }
+    });
+
+    test.each(['POST', 'PUT', 'DELETE'])('rejects %s without a write interface', async (method) => {
+        const response = middleware(new Request('https://mdflow.dev/facts.json', { method }));
+        expect(response.status).toBe(405);
+        expect(response.headers.get('Allow')).toBe('GET, HEAD');
+        expect(response.headers.get('Content-Type')).toContain('application/problem+json');
+        expect(await response.json()).toMatchObject({ type: 'about:blank', status: 405, instance: '/facts.json' });
+    });
+
+    test.each(['text/*', 'application/json;q=0,*/*;q=1'])('rejects unaccepted JSON: %s', async (accept) => {
+        const response = middleware(new Request('https://mdflow.dev/facts.json', { headers: { Accept: accept } }));
+        expect(response.status).toBe(406);
+        expect(await response.json()).toMatchObject({ status: 406, title: 'Not Acceptable' });
+    });
+});

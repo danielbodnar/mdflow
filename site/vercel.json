@@ -17,7 +17,36 @@
       "headers": { "Content-Type": "text/markdown; charset=utf-8" },
       "continue": true
     },
+    {
+      "src": "/.well-known/api-catalog",
+      "headers": {
+        "Content-Type": "application/linkset+json; profile=\"https://www.rfc-editor.org/info/rfc9727\"",
+        "Link": "<https://mdflow.dev/.well-known/api-catalog>; rel=\"api-catalog\""
+      },
+      "continue": true
+    },
+    {
+      "src": "/facts\\.json",
+      "headers": {
+        "X-API-Version": "1",
+        "Link": "<https://mdflow.dev/openapi.json>; rel=\"service-desc\", <https://mdflow.dev/docs/>; rel=\"service-doc\", <https://mdflow.dev/.well-known/api-catalog>; rel=\"api-catalog\""
+      },
+      "continue": true
+    },
     { "handle": "filesystem" },
+    {
+      "src": "/api(?:/.*)?",
+      "dest": "/404.json",
+      "status": 404,
+      "headers": { "Content-Type": "application/problem+json; charset=utf-8", "Cache-Control": "no-store" }
+    },
+    {
+      "src": "/(.*)",
+      "has": [{ "type": "header", "key": "accept", "value": ".*application/(?:problem\\+)?json.*" }],
+      "dest": "/404.json",
+      "status": 404,
+      "headers": { "Content-Type": "application/problem+json; charset=utf-8", "Vary": "Accept", "Cache-Control": "no-store" }
+    },
     {
       "src": "/(.*)",
       "has": [{ "type": "header", "key": "accept", "value": ".*text/html.*" }],
