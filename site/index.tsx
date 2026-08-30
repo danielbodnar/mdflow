@@ -15,11 +15,16 @@ if (!rootElement) {
   throw new Error("Could not find root element to mount to");
 }
 
-const root = ReactDOM.createRoot(rootElement);
-root.render(
+const app = (
   <React.StrictMode>
     <LazyMotion features={loadMotionFeatures} strict>
       <App />
     </LazyMotion>
   </React.StrictMode>
 );
+
+if (rootElement.dataset.prerendered === 'true') {
+  ReactDOM.hydrateRoot(rootElement, app);
+} else {
+  ReactDOM.createRoot(rootElement).render(app);
+}

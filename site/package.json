@@ -7,13 +7,14 @@
     "dev": "portless run --name mdflow vite",
     "dev:raw": "vite",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "bun test ./components/workbench-demo/model.test.ts ./components/workbench-demo/screens.test.ts",
-    "build": "vite build && node scripts/build-content.mjs",
+    "test": "bun test ./components/workbench-demo/model.test.ts ./components/workbench-demo/screens.test.ts ./middleware.test.ts",
+    "build": "vite build && node scripts/prerender.mjs && node scripts/build-content.mjs && node scripts/build-agent-resources.mjs",
     "verify": "bun run test && bun run typecheck && bun run build",
     "preview": "vite preview",
     "og-image": "node scripts/generate-og-image.mjs"
   },
   "dependencies": {
+    "@vercel/functions": "^3.9.5",
     "@wterm/dom": "0.3.0",
     "@wterm/react": "0.3.0",
     "framer-motion": "^12.23.25",

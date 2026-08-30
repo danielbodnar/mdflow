@@ -1,4 +1,4 @@
-import React, { Suspense, useState } from 'react';
+import React, { Suspense, useEffect, useState } from 'react';
 import { Hero } from './components/Hero';
 import { SplitSection } from './components/SplitSection';
 import { Editor } from './components/Editor';
@@ -9,18 +9,15 @@ import { FlowsRoster } from './components/FlowsRoster';
 import { Evolve } from './components/Evolve';
 import { Zap, Volume2, VolumeX } from 'lucide-react';
 import { FlowMark } from './components/FlowMark';
+import { CraftedBy } from './components/CraftedBy';
+import { FlowWorkbenchDemo } from './components/FlowWorkbenchDemo';
 
-// The decorative/interactive heavyweights (WebGL shader, reactive audio
-// engine, easter eggs, the alien-defense game, Eggo, the wterm workbench)
-// are code-split so the critical bundle only carries above-fold content.
-// They start downloading right after mount, so in practice they appear
-// within a frame or two — but they no longer gate first paint or LCP.
+// Decorative overlays are client-only enhancements. Product content renders
+// on the server and hydrates without waiting for these heavier chunks.
 const ShaderGuide = React.lazy(() => import('./components/ShaderGuide').then(mod => ({ default: mod.ShaderGuide })));
 const ShaderHints = React.lazy(() => import('./components/ShaderHints').then(mod => ({ default: mod.ShaderHints })));
 const EasterEggs = React.lazy(() => import('./components/EasterEggs').then(mod => ({ default: mod.EasterEggs })));
 const AlienDefense = React.lazy(() => import('./components/AlienDefense').then(mod => ({ default: mod.AlienDefense })));
-const CraftedBy = React.lazy(() => import('./components/CraftedBy').then(mod => ({ default: mod.CraftedBy })));
-const FlowWorkbenchDemo = React.lazy(() => import('./components/FlowWorkbenchDemo').then(mod => ({ default: mod.FlowWorkbenchDemo })));
 
 /** Loads the audio engine on first use — it's 60K of source nobody pays
  *  for unless they actually unmute (the shader chunk shares the module). */
@@ -233,6 +230,8 @@ const DEMOS = [
 
 export default function App() {
   const [muted, setMuted] = useState(true);
+  const [enhanced, setEnhanced] = useState(false);
+  useEffect(() => setEnhanced(true), []);
   return (
     <div className="min-h-screen bg-[#050505] text-zinc-100 font-sans selection:bg-orange-500/30">
       
@@ -245,7 +244,7 @@ export default function App() {
       {/* Mouse-reactive shader that guides the eye to install + getting
           started. These are all fixed-position overlays, so a null fallback
           costs no layout. */}
-      <Suspense fallback={null}>
+      {enhanced && <Suspense fallback={null}>
         <ShaderGuide />
         <ShaderHints
           muted={muted}
@@ -257,7 +256,7 @@ export default function App() {
 
         {/* heart HUD for the alien defense game (ShaderGuide owns the rules) */}
         <AlienDefense />
-      </Suspense>
+      </Suspense>}
 
       {/* Navigation */}
       <nav className="fixed top-0 w-full z-50 border-b border-white/5 bg-[#050505]/80 backdrop-blur-xl">
@@ -293,20 +292,14 @@ export default function App() {
       <main className="relative z-10">
         <Hero />
 
-        {/* Maker credit + Software Factory workshop (full shader treatment).
-            The fallback reserves roughly the section's height so late chunk
-            arrival doesn't yank the sections below it upward. */}
-        <Suspense fallback={<section className="relative py-28 px-6 min-h-[60vh]" />}>
-          <CraftedBy />
-        </Suspense>
+        {/* Maker credit + Software Factory workshop. */}
+        <CraftedBy />
 
         {/* The concrete mental model: ./flows is your repo's agent roster */}
         <FlowsRoster />
 
         {/* Bare md as the interactive lifecycle workbench, rendered with wterm */}
-        <Suspense fallback={<section className="relative px-4 py-24 sm:px-6 md:py-32 min-h-[70vh]" />}>
-          <FlowWorkbenchDemo />
-        </Suspense>
+        <FlowWorkbenchDemo />
 
         {/* The hero's promise, mechanized: evidence-gated proposals */}
         <Evolve />
@@ -347,8 +340,15 @@ export default function App() {
             <p className="font-display text-zinc-400 text-sm tracking-wide">
                 CRAFTED FOR THE <span className="text-zinc-200 font-bold">TERMINAL NATIVE</span>
             </p>
+            <nav aria-label="Resources" className="mt-6 flex flex-wrap justify-center gap-x-6 gap-y-3 px-6 text-sm text-zinc-400">
+                <a href="/docs/" className="hover:text-white transition-colors">Docs</a>
+                <a href="/about/" className="hover:text-white transition-colors">About</a>
+                <a href="/contact/" className="hover:text-white transition-colors">Contact</a>
+                <a href="/privacy/" className="hover:text-white transition-colors">Privacy</a>
+                <a href="/llms.txt" className="hover:text-white transition-colors">llms.txt</a>
+            </nav>
             <p className="mt-4 text-xs text-zinc-600 font-mono">
-                MIT License &copy; {new Date().getFullYear()} mdflow.dev
+                <a href="https://github.com/johnlindquist/mdflow/blob/main/LICENSE" className="hover:text-zinc-300 transition-colors">MIT License</a> &middot; mdflow.dev
             </p>
         </div>
       </footer>

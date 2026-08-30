@@ -52,7 +52,7 @@ export const SplitSection: React.FC<SplitSectionProps> = ({
         {/* Grid Container - Auto height on mobile, fixed 360px on desktop */}
         <div className={`grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-24 items-center h-auto lg:h-[360px] ${reversed ? 'lg:flex-row-reverse' : ''}`}>
             <m.div
-                initial={{ opacity: 0, x: -50 }}
+                initial={false}
                 whileInView={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.7, ease: "easeOut" }}
                 viewport={{ once: true, margin: "-100px" }}
@@ -66,7 +66,7 @@ export const SplitSection: React.FC<SplitSectionProps> = ({
             </m.div>
 
             <m.div
-                initial={{ opacity: 0, x: 50 }}
+                initial={false}
                 whileInView={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.7, delay: 0.2, ease: "easeOut" }}
                 viewport={{ once: true, margin: "-100px" }}

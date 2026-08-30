@@ -1,0 +1,13 @@
+# Page not found
+
+This URL does not identify a published mdflow page. The response status is 404; it is not an empty success or an application shell.
+
+Use these public resources to recover:
+
+- [Homepage](https://mdflow.dev/): what mdflow does and how to install it.
+- [Documentation](https://mdflow.dev/docs/): CLI usage and the local agent interface.
+- [Agent guide](https://mdflow.dev/llms.txt): when to use mdflow and where to find authoritative documentation.
+- [Sitemap](https://mdflow.dev/sitemap.xml): published human-readable pages.
+- [Contact](https://mdflow.dev/contact/): report a broken link or ask a project question.
+
+mdflow is a local, open-source CLI. This website does not host a workflow execution API or an MCP server. Use the documented CLI on your own machine rather than guessing web API paths.

@@ -1,7 +1,11 @@
-import React, { useEffect, useRef } from 'react';
+import React, { Suspense, useEffect, useRef, useState } from 'react';
 import { m } from 'framer-motion';
 import { Zap, ArrowRight } from 'lucide-react';
-import { EggoInteractive, StretchName } from './EggoInteractive';
+const EggoInteractive = React.lazy(() => import('./EggoInteractive').then(mod => ({ default: mod.EggoInteractive })));
+const StretchName = React.lazy(() => import('./EggoInteractive').then(mod => ({ default: mod.StretchName })));
+const AUTHOR_NAME = 'John Lindquist';
+const authorName = <span className="font-display text-4xl sm:text-5xl font-bold tracking-tight text-zinc-200">{AUTHOR_NAME}</span>;
+const eggo = <img src="/eggo.svg" alt="Eggo, the egghead.io mascot" data-shader-egg className="w-32 h-32" draggable={false} />;
 
 /**
  * Prominent maker credit. [data-shader-credit] gives the block its own
@@ -20,6 +24,7 @@ const TRACK_TEXT = 'Tickets are Limited. Join Now!';
 export const CraftedBy: React.FC = () => {
     const btnRef = useRef<HTMLAnchorElement>(null);
     const trackRef = useRef<HTMLDivElement>(null);
+    const [enhanced, setEnhanced] = useState(false);
 
     // "Tickets are Limited. Join Now!" circles the button like a train on a
     // track. The track sits BELOW the button in z-order and scales with
@@ -28,6 +33,7 @@ export const CraftedBy: React.FC = () => {
     // whole ring slides out from behind it. Styles are driven directly (no
     // re-renders), one rAF per pointer frame.
     useEffect(() => {
+        setEnhanced(true);
         const fine = window.matchMedia('(pointer: fine)').matches;
         let raf = 0;
         let lastEased = -1;
@@ -165,7 +171,7 @@ export const CraftedBy: React.FC = () => {
     return (
         <section className="relative py-28 px-6">
             <m.div
-                initial={{ opacity: 0, y: 24 }}
+                initial={false}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true, margin: '-80px' }}
                 transition={{ duration: 0.6 }}
@@ -175,7 +181,7 @@ export const CraftedBy: React.FC = () => {
                 {/* grabbable rubber-sheet eggo — stretch it, it snaps back;
                     dots treat it as a round bumper */}
                 <div data-shader-bounce="circle" className="shrink-0">
-                    <EggoInteractive />
+                    {enhanced ? <Suspense fallback={eggo}><EggoInteractive /></Suspense> : eggo}
                 </div>
                 <div className="text-center sm:text-left">
                     <div className="text-xs font-mono uppercase tracking-[0.3em] text-zinc-500 mb-2">
@@ -184,10 +190,11 @@ export const CraftedBy: React.FC = () => {
                     {/* the name is a stretchy sheet too (no link — pure toy);
                         each LETTER is its own bumper, so dots ricochet off
                         single glyphs or slip between them */}
-                    <StretchName
-                        text="John Lindquist"
-                        className="mx-auto sm:mx-0"
-                    />
+                    {enhanced ? (
+                        <Suspense fallback={authorName}>
+                            <StretchName text={AUTHOR_NAME} className="mx-auto sm:mx-0" />
+                        </Suspense>
+                    ) : authorName}
                     <p className="mt-3 text-zinc-400 leading-relaxed">
                         <span className="block">
                             Co-founder of{' '}

@@ -28,12 +28,12 @@ const HERO_OUTPUT: TerminalLine[] = [
 ];
 
 export const Hero: React.FC = () => {
-    const [lines, setLines] = useState<TerminalLine[]>([]);
+    const [lines, setLines] = useState<TerminalLine[]>(() => [HERO_OUTPUT[0]]);
     const [copied, setCopied] = useState(false);
     const [editorInFront, setEditorInFront] = useState(false);
 
     useEffect(() => {
-        let currentIndex = 0;
+        let currentIndex = 1;
         const interval = setInterval(() => {
             if (currentIndex < HERO_OUTPUT.length) {
                 const line = HERO_OUTPUT[currentIndex];
@@ -68,10 +68,8 @@ export const Hero: React.FC = () => {
 
                 {/* Text Content */}
                 <div className="lg:col-span-6 flex flex-col justify-center space-y-8">
-                    {/* No entrance animation here: this block is the LCP
-                        element and a static copy of it paints from index.html
-                        before React mounts — animating it would both delay
-                        LCP and make the mount swap visibly flicker. */}
+                    {/* The LCP content is rendered at build time and stays visible
+                        while React hydrates the interactive enhancements. */}
                     <div className="select-none">
                         <div className="flex items-center gap-3 mb-8">
                             <div data-egg="v3" className="inline-flex items-center px-4 py-1.5 rounded-full border border-orange-500/50 bg-orange-950/30 text-xs font-mono text-orange-200 backdrop-blur-md shadow-[0_0_15px_rgba(249,115,22,0.3)] cursor-pointer">
@@ -109,7 +107,7 @@ export const Hero: React.FC = () => {
                     </div>
 
                     <m.div
-                        initial={{ opacity: 0 }}
+                        initial={false}
                         animate={{ opacity: 1 }}
                         transition={{ delay: 0.5, duration: 0.6 }}
                         className="select-none pt-4"
@@ -122,7 +120,7 @@ export const Hero: React.FC = () => {
                                 className="group inline-flex h-12 items-center justify-center gap-2.5 px-5 bg-white text-black font-mono font-semibold rounded-lg transition-all hover:scale-[1.03] active:scale-95 shadow-[0_0_20px_rgba(255,255,255,0.25)] hover:shadow-[0_0_30px_rgba(255,255,255,0.45)] whitespace-nowrap"
                             >
                                 <span className="text-orange-600">$</span>
-                                <span className="tracking-tight">{facts.install}</span>
+                                <span className="tracking-tight select-text">{facts.install}</span>
                                 <span className="ml-1 pl-3 border-l border-zinc-300 text-zinc-400 group-hover:text-black transition-colors">
                                     {copied ? <Check size={16} className="text-green-600" /> : <Copy size={16} />}
                                 </span>

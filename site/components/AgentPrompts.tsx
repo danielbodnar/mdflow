@@ -33,7 +33,7 @@ export const AgentPrompts: React.FC = () => {
 
 			<div className="max-w-6xl mx-auto relative z-10">
 				<m.div
-					initial={{ opacity: 0, y: 24 }}
+					initial={false}
 					whileInView={{ opacity: 1, y: 0 }}
 					viewport={{ once: true }}
 					transition={{ duration: 0.6 }}

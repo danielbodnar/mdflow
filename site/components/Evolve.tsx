@@ -80,7 +80,7 @@ export const Evolve: React.FC = () => {
 
             <div className="max-w-6xl mx-auto relative z-10">
                 <m.div
-                    initial={{ opacity: 0, y: 24 }}
+                    initial={false}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.6 }}
@@ -99,7 +99,7 @@ export const Evolve: React.FC = () => {
                 </m.div>
 
                 <m.p
-                    initial={{ opacity: 0 }}
+                    initial={false}
                     whileInView={{ opacity: 1 }}
                     viewport={{ once: true }}
                     transition={{ delay: 0.2, duration: 0.6 }}
@@ -111,7 +111,7 @@ export const Evolve: React.FC = () => {
 
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-stretch mb-16">
                     <m.div
-                        initial={{ opacity: 0, x: -24 }}
+                        initial={false}
                         whileInView={{ opacity: 1, x: 0 }}
                         viewport={{ once: true, margin: '-80px' }}
                         transition={{ duration: 0.5 }}
@@ -121,7 +121,7 @@ export const Evolve: React.FC = () => {
                     </m.div>
 
                     <m.div
-                        initial={{ opacity: 0, x: 24 }}
+                        initial={false}
                         whileInView={{ opacity: 1, x: 0 }}
                         viewport={{ once: true, margin: '-80px' }}
                         transition={{ duration: 0.5 }}
@@ -135,7 +135,7 @@ export const Evolve: React.FC = () => {
                     {GUARANTEES.map((g, i) => (
                         <m.div
                             key={g.title}
-                            initial={{ opacity: 0, y: 16 }}
+                            initial={false}
                             whileInView={{ opacity: 1, y: 0 }}
                             viewport={{ once: true }}
                             transition={{ delay: i * 0.07, duration: 0.45 }}
@@ -149,7 +149,7 @@ export const Evolve: React.FC = () => {
                 </div>
 
                 <m.div
-                    initial={{ opacity: 0 }}
+                    initial={false}
                     whileInView={{ opacity: 1 }}
                     viewport={{ once: true }}
                     transition={{ duration: 0.6 }}

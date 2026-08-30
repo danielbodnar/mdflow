@@ -38,7 +38,7 @@ export const CopyPrompt: React.FC<CopyPromptProps> = ({ title, description, prom
 
     return (
         <m.div
-            initial={{ opacity: 0, y: 24 }}
+            initial={false}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: '-80px' }}
             transition={{ duration: 0.5, delay: index * 0.08 }}

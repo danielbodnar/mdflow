@@ -1,0 +1,41 @@
+import { describe, expect, test } from 'bun:test';
+import middleware from './middleware';
+
+describe('page representation negotiation', () => {
+    test.each([
+        ['text/markdown', '/index.md'],
+        ['text/markdown, text/html;q=0.5', '/index.md'],
+        ['text/html;q=0.5, text/markdown;q=0.9', '/index.md'],
+        ['text/markdown;q=0.5, text/*;q=0.1', '/index.md'],
+        ['TEXT/MARKDOWN', '/index.md'],
+    ])('serves Markdown for %s', (accept, path) => {
+        const response = middleware(new Request('https://mdflow.dev/', { headers: { Accept: accept } }));
+        expect(response.headers.get('x-middleware-rewrite')).toBe(`https://mdflow.dev${path}`);
+        expect(response.headers.get('Content-Type')).toBe('text/markdown; charset=utf-8');
+        expect(response.headers.get('Vary')).toContain('Accept');
+    });
+
+    test.each(['*/*', 'text/html', 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8', 'text/markdown;q=0, */*;q=1', 'text/html;q=1, text/markdown;q=0.5'])('keeps HTML for %s', (accept) => {
+        const response = middleware(new Request('https://mdflow.dev/', { headers: { Accept: accept } }));
+        expect(response.headers.get('x-middleware-next')).toBe('1');
+        expect(response.headers.get('x-middleware-rewrite')).toBeNull();
+        expect(response.headers.get('Vary')).toContain('Accept');
+    });
+
+    test('rewrites article representation without losing query parameters', () => {
+        const response = middleware(new Request('https://mdflow.dev/docs/?from=agent', { headers: { Accept: 'text/markdown' } }));
+        expect(response.headers.get('x-middleware-rewrite')).toBe('https://mdflow.dev/docs.md?from=agent');
+    });
+
+    test.each(['application/json', 'text/html;q=0,text/markdown;q=0,*/*;q=1'])('rejects unsupported representations: %s', async (accept) => {
+        const response = middleware(new Request('https://mdflow.dev/', { headers: { Accept: accept } }));
+        expect(response.status).toBe(406);
+        expect(await response.text()).toContain('text/html or text/markdown');
+    });
+
+    test('HEAD rejection contains no response body', async () => {
+        const response = middleware(new Request('https://mdflow.dev/', { method: 'HEAD', headers: { Accept: 'application/json' } }));
+        expect(response.status).toBe(406);
+        expect(await response.text()).toBe('');
+    });
+});

@@ -88,9 +88,7 @@ export const FlowWorkbenchDemo: React.FC = () => {
     const [hoverPaused, setHoverPaused] = useState(false);
     const [focusPaused, setFocusPaused] = useState(false);
     const [terminalFocused, setTerminalFocused] = useState(false);
-    const [pageHidden, setPageHidden] = useState(
-        () => typeof document !== 'undefined' && document.hidden,
-    );
+    const [pageHidden, setPageHidden] = useState(false);
     const reducedMotion = usePrefersReducedMotion();
 
     const story = storyFor(state.storyId);
@@ -120,6 +118,7 @@ export const FlowWorkbenchDemo: React.FC = () => {
 
     useEffect(() => {
         const onVisibility = () => setPageHidden(document.hidden);
+        onVisibility();
         document.addEventListener('visibilitychange', onVisibility);
         return () => document.removeEventListener('visibilitychange', onVisibility);
     }, []);
@@ -441,7 +440,7 @@ export const FlowWorkbenchDemo: React.FC = () => {
 
             <div className="relative z-10 mx-auto max-w-7xl">
                 <m.div
-                    initial={reducedMotion ? false : { opacity: 0, y: 20 }}
+                    initial={false}
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ duration: reducedMotion ? 0 : 0.55 }}
@@ -485,7 +484,7 @@ export const FlowWorkbenchDemo: React.FC = () => {
                                     key={item.id}
                                     type="button"
                                     data-story-select={item.id}
-                                    initial={reducedMotion ? false : { opacity: 0, x: -12 }}
+                                    initial={false}
                                     whileInView={{ opacity: 1, x: 0 }}
                                     viewport={{ once: true }}
                                     transition={{ delay: reducedMotion ? 0 : index * 0.06, duration: reducedMotion ? 0 : 0.35 }}
@@ -521,7 +520,7 @@ export const FlowWorkbenchDemo: React.FC = () => {
                     </div>
 
                     <m.div
-                        initial={reducedMotion ? false : { opacity: 0, y: 18 }}
+                        initial={false}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true, margin: '-80px' }}
                         transition={{ duration: reducedMotion ? 0 : 0.55 }}
@@ -660,7 +659,7 @@ export const FlowWorkbenchDemo: React.FC = () => {
                             data-phase-kind={phase?.kind ?? 'none'}
                             data-phase-index={state.playback.phaseIndex}
                             onPointerDown={takeOver}
-                            className="h-[430px] min-w-0 bg-[#070708] sm:h-[500px]"
+                            className="relative h-[430px] min-w-0 bg-[#070708] sm:h-[500px]"
                             role="region"
                             aria-live="off"
                             aria-label={`${story.title} interactive terminal fixture. No repository is scanned, no engine runs, and no files are written.`}
@@ -682,6 +681,13 @@ export const FlowWorkbenchDemo: React.FC = () => {
                             onCompositionStartCapture={() => { isComposingRef.current = true; }}
                             onCompositionEndCapture={() => { isComposingRef.current = false; }}
                         >
+                            {!ready && !terminalError && (
+                                <div className="absolute inset-0 z-10 flex flex-col justify-center gap-4 bg-[#070708] p-8 font-mono text-sm text-zinc-400">
+                                    <p className="text-zinc-200">{story.title}</p>
+                                    <p>{story.summary}</p>
+                                    <p>The interactive terminal uses JavaScript. <a href="/docs/" className="text-orange-300 underline underline-offset-4 hover:text-orange-200">Read the documentation</a> for commands you can run locally.</p>
+                                </div>
+                            )}
                             {terminalError ? (
                                 <div className="flex h-full items-center justify-center p-8 text-center font-mono text-sm text-zinc-400">
                                     <div>
